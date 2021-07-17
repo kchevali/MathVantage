@@ -5,19 +5,20 @@ import subprocess
 import xerox
 import os
 import traceback
+import pynput
+from pynput.mouse import Button
+from pynput.keyboard import Key
 
 pulsePause = 0.01
 shortPause = 0.1
 longPause = 0.5
 extraLongPause = 1
 
-quitPause = 2
+quitPause = 5
 highlightPause = 0.05
-searchPause = 1
+searchPause = 2.5
 
 debugPause = 4
-# pya8. utogui.PAUSE = 0.05
-pyautogui.PAUSE = 0.05
 
 endSectionQuestionSpace = 20
 maxQ = 200
@@ -55,8 +56,19 @@ examQ = [
     [25, 25],
     [25, 25, 25]
 ]
+mouse = pynput.mouse.Controller()
+keyboard = pynput.keyboard.Controller()
 
 directoryPath = "/Users/kevin/Documents/Repos/MathVantage/Exams"
+
+shiftKeys = [
+    (':', ';')
+]
+
+# pynput
+keyDict = {}
+for key in Key:
+    keyDict[key.name] = key
 
 
 def getInputLines():
@@ -83,17 +95,39 @@ def countDown():
         sleep(1)
 
 
-def wait(cond, msg):
+def wait(msg=None, cond=True):
     if cond:
-        print(msg)
+        if msg != None:
+            print(msg)
         input()
         countDown()
 
 
-def pause(cond, msg):
+def pause(msg=None, cond=True):
     if cond:
-        print(msg)
+        if msg != None:
+            print(msg)
         sleep(2)
+
+
+# def write(string):
+#     """
+#     Keys that require the shift to be pressed such as ':' needs to be explicitly typed as 'shift' + ';'
+#     """
+#     for ch, base in shiftKeys:
+#         if ch in string:
+#             parts = string.split(ch)
+#             for i in range(len(parts)):
+#                 write(parts[i])
+#                 if i + 1 < len(parts):
+#                     keyUp('shift')
+#                     print("PRESS", base)
+#                     keyPress(base, interval=pulsePause)
+#                     keyDown('shift')
+#             return
+#     typeString(string)
+
+# File Operations.
 
 
 def copyFile(src, dest):
@@ -112,21 +146,56 @@ def deleteFile(path):
     except:
         pass
 
+# Input Operations
+
+
+def keyPress(*args, interval=0):
+    for key in args:
+        if len(key) > 1:
+            key = keyDict[key]
+        keyboard.press(key)
+
+    for key in reversed(args):
+        if len(key) > 1:
+            key = keyDict[key]
+        keyboard.release(key)
+
+
+def write(string):
+    keyboard.type(string)
+
+
+def getClipboard():
+    return xerox.paste()
+
+
+def moveMouseTo(pos):
+    pyautogui.moveTo(pos)
+
+
+def click(pos, count=1):
+    for i in range(count):
+        moveMouseTo(pos)
+        mouse.click(Button.left)
+
+# My Operations
+
 
 def fullScreen():
-    pyautogui.hotkey('command', 'ctrl', 'f', interval=longPause)
+    keyPress('cmd', 'ctrl', 'f')
+    sleep(extraLongPause)
 
 
 def searchBar():
-    pyautogui.hotkey('command', 'f', interval=shortPause)
+    keyPress('cmd', 'f', interval=shortPause)
 
 
 def escape():
-    pyautogui.press('esc', interval=pulsePause)
+    keyPress('esc', interval=pulsePause)
 
 
 def enter():
-    pyautogui.press('enter', interval=pulsePause)
+    keyPress('enter', interval=pulsePause)
 
 
 def gotoQuestion(numQ, index):
@@ -137,7 +206,7 @@ def gotoQuestion(numQ, index):
     moveToStartOfLine()
 
 
-def search(s, depth=0):
+def search(s, depth=0, terminateOnFail=True):
     searchBar()
     write("\\n" + s)
     sleep(searchPause)
@@ -146,23 +215,26 @@ def search(s, depth=0):
     current = copy()
     if(current != ("\n" + s)):
         if(depth < 2):
-            search(s, depth + 1)
-        else:
+            return search(s, depth + 1, terminateOnFail)
+        elif terminateOnFail:
             print("Cannot find:", s)
             # print("Found:'" + current + "'")
             exit()
+        else:
+            return False
+    return True
 
 
 def gotoStartPage():
-    pyautogui.hotkey('command', 'up', interval=pulsePause)
+    keyPress('cmd', 'up', interval=pulsePause)
 
 
 def gotoEndPage():
-    pyautogui.hotkey('command', 'down', interval=pulsePause)
+    keyPress('cmd', 'down', interval=pulsePause)
 
 
 def highlightAbove():
-    pyautogui.hotkey('command', 'shift', 'up', interval=highlightPause)
+    keyPress('cmd', 'shift', 'up', interval=highlightPause)
 
 
 def deleteAbove(cursorDown=False):
@@ -185,7 +257,7 @@ def copyAbove():
 
 
 def highlightBelow():
-    pyautogui.hotkey('command', 'shift', 'down', interval=highlightPause)
+    keyPress('cmd', 'shift', 'down', interval=highlightPause)
 
 
 def deleteBelow():
@@ -199,90 +271,94 @@ def cutBelow():
 
 
 def swapWindows():
-    pyautogui.hotkey('ctrl', 'tab', interval=shortPause)
+    keyPress('ctrl', 'tab', interval=shortPause)
 
 
 def cut():
-    pyautogui.hotkey('command', 'x', interval=shortPause)
+    keyPress('cmd', 'x', interval=shortPause)
 
 
 def save():
-    pyautogui.hotkey('command', 's', interval=shortPause)
+    keyPress('cmd', 's', interval=shortPause)
 
 
 def fast_copy():
-    pyautogui.hotkey('command', 'c', interval=shortPause)
+    keyPress('cmd', 'c', interval=shortPause)
 
 
 def copy():
-    pyautogui.hotkey('command', 'c', interval=shortPause)
+    keyPress('cmd', 'c', interval=shortPause)
     sleep(0.75)
-    line = xerox.paste()
+    line = getClipboard()
     sleep(0.01)
     return line
 
 
 def paste():
-    pyautogui.hotkey('command', 'v', interval=shortPause)
+    keyPress('cmd', 'v', interval=shortPause)
 
 
 def highlightDown():
-    pyautogui.hotkey('shift', 'down', interval=highlightPause)
+    keyPress('shift', 'down', interval=highlightPause)
 
 
 def highlightRight():
-    pyautogui.hotkey('shift', 'right', interval=highlightPause)
+    keyPress('shift', 'right', interval=highlightPause)
 
 
 def highlightUp():
-    pyautogui.hotkey('shift', 'up', interval=highlightPause)
+    keyPress('shift', 'up', interval=highlightPause)
 
 
 def moveDown():
-    pyautogui.press('down', interval=pulsePause)
+    keyPress('down', interval=pulsePause)
+
+
+def movePageDown():
+    keyPress('ctrl', 'v', interval=pulsePause)
 
 
 def moveToStartOfLine():
-    pyautogui.hotkey('ctrl', 'a', interval=pulsePause)
+    keyPress('ctrl', 'a', interval=pulsePause)
 
 
 def moveRight():
-    pyautogui.press('right', interval=pulsePause)
+    keyPress('right', interval=pulsePause)
 
 
 def moveToEnd():
-    pyautogui.hotkey('ctrl', 'e', interval=pulsePause)
+    keyPress('ctrl', 'e', interval=pulsePause)
 
 
 def delete():
-    pyautogui.hotkey('ctrl', 'h', interval=pulsePause)
+    keyPress('ctrl', 'h', interval=pulsePause)
 
 
 def printPages():
-    pyautogui.hotkey('command', 'p', interval=longPause)
+    keyPress('cmd', 'p', interval=longPause)
+
+
+def closeAllWindows(count=2):
+    for i in range(count):
+        keyPress('cmd', 'w')
+        sleep(quitPause)
 
 
 def quitPages():
-    pyautogui.hotkey('command', 'q', interval=quitPause)
-
-
-def write(string):
-    pyautogui.write(string)
-
-
-def click(pos):
-    pyautogui.click(pos[0], pos[1], interval=pulsePause)
+    closeAllWindows()
 
 
 def hoverMouse(pos):
     pyautogui.moveTo(pos)
     sleep(extraLongPause)
 
+# Page Operations
+
 
 def setupFirstPage(numBook, numExam, numQ):
     sectionName = displaySections[numBook - 1]
-    middleHeaderPos = (520, 110)
-    rightHeaderPos = (730, 110)
+    middleHeaderPos = (520, 115)
+    rightHeaderPos = (730, 115)
 
     y = 225
 
@@ -292,21 +368,27 @@ def setupFirstPage(numBook, numExam, numQ):
     title = "{} - Exam {}".format(sectionName, numExam)
     lessonStart, lessonEnd = lessons[numBook - 1][numExam - 1]
 
-    click(middleHeaderPos)
+    # Write middle header title.
+    click(middleHeaderPos, count=2)
     write(title)
+
+    # Write right header title.
     click(rightHeaderPos)
     write("Exam Number: {:03}".format(numQ))
+
+    # Write main title.
     click(titlePos)
     write(title)
     click(lessonPos)
     write("Lesson: {}-{}".format(lessonStart, lessonEnd))
     click(textPos)
     moveRight()
+    pause("Check for cursor")
 
     sleep(2)
     save()
-    sleep(1)
-    createLectureFile(numBook, numExam, numQ)
+    sleep(2)
+    createQuestionFile(numBook, numExam, numQ)
 
     swapWindows()
 
@@ -318,6 +400,7 @@ def adjustFinalPage():
     textPos = (620, 730)
     stayOnPagePos = (1100, 155)
 
+    sleep(0.5)
     gotoEndPage()
     click(finalPagePos)
     sleep(0.05)
@@ -335,6 +418,7 @@ def columnBreak():
     columnPos = (420, 110)
 
     click(pPos)
+    sleep(0.5)
     click(columnPos)
 
 
@@ -344,14 +428,14 @@ def clearPDF(numBook, numExam, numQ):
 
     solutionPDFFileName = "{} - Exam {} - {:03d} Solution.pages.pdf".format(
         section, numExam, numQ)
-    lecturePDFFileName = "{} - Exam {} - {:03d} Questions.pages.pdf".format(
+    questionPDFFileName = "{} - Exam {} - {:03d} Questions.pages.pdf".format(
         section, numExam, numQ)
 
     solutionPath = basePath + solutionPDFFileName
-    lecturePath = basePath + lecturePDFFileName
+    questionPath = basePath + questionPDFFileName
 
     deleteFile(solutionPath)
-    deleteFile(lecturePath)
+    deleteFile(questionPath)
 
 
 def convertToPDF(numBook):
@@ -396,6 +480,8 @@ def createFiles(numBook, numExam, numQ):
     templatePath = basePath + templateFileName
     srcPath = pagesPath + srcFileName
 
+    # Have to delete Source.pages first to prevent errors later when closing it
+    deleteFile(srcPath)
     copyFile(templatePath, srcPath)
     openFile(srcPath)
     fullScreen()
@@ -404,23 +490,23 @@ def createFiles(numBook, numExam, numQ):
     openFile(solutionPath)
 
 
-def createLectureFile(numBook, numExam, numQ):
+def createQuestionFile(numBook, numExam, numQ):
     section = fileSections[numBook - 1]
     basePath = "{}/{}/".format(directoryPath, section)
     pagesPath = basePath + "Pages/"
 
     solutionFileName = "{} - Exam {} - {:03d} Solution.pages".format(
         section, numExam, numQ)
-    lectureFileName = "{} - Exam {} - {:03d} Questions.pages".format(
+    questionFileName = "{} - Exam {} - {:03d} Questions.pages".format(
         section, numExam, numQ)
 
     solutionPath = pagesPath + solutionFileName
-    lecturePath = pagesPath + lectureFileName
+    questionPath = pagesPath + questionFileName
 
-    copyFile(solutionPath, lecturePath)
+    copyFile(solutionPath, questionPath)
 
 
-def openLectureFiles(numBook, numExam, numQ):
+def openQuestionFiles(numBook, numExam, numQ):
     section = fileSections[numBook - 1]
     basePath = "{}/{}/".format(directoryPath, section)
     pagesPath = basePath + "Pages/"
@@ -428,15 +514,15 @@ def openLectureFiles(numBook, numExam, numQ):
     srcFileName = "Source.pages"
     solutionFileName = "{} - Exam {} - {:03d} Solution.pages".format(
         section, numExam, numQ)
-    lectureFileName = "{} - Exam {} - {:03d} Questions.pages".format(
+    questionFileName = "{} - Exam {} - {:03d} Questions.pages".format(
         section, numExam, numQ)
 
     srcPath = pagesPath + srcFileName
     solutionPath = pagesPath + solutionFileName
-    lecturePath = pagesPath + lectureFileName
+    questionPath = pagesPath + questionFileName
 
     copyFile(solutionPath, srcPath)
-    openFile(lecturePath)
+    openFile(questionPath)
     fullScreen()
     openFile(srcPath)
 
@@ -465,7 +551,9 @@ def processFiles(nums, numBook, numExam, convertPDF, quitAtEnd=True):
         cutAbove(cursorDown=False)
         swapWindows()
         if(index == finalSectionQ):
+            pause("GO FOR ADJUST")
             adjustFinalPage()
+            # wait(msg="Did final file")
         paste()
         # if(index == 5):
         #     return
@@ -484,7 +572,7 @@ def processFiles(nums, numBook, numExam, convertPDF, quitAtEnd=True):
 # building the second document (q only)
 
 
-def processLectureFiles(numBook, numExam, nums, convertPDF, quitAtEnd=True):
+def processQuestionFiles(numBook, numExam, nums, convertPDF, quitAtEnd=True):
     # textPos = (180, 225)
     # click(textPos)
     gotoStartPage()
@@ -497,21 +585,23 @@ def processLectureFiles(numBook, numExam, nums, convertPDF, quitAtEnd=True):
         highlightAbove()
         highlightRight()
         copy()
-        wait(index == 24 or index == 23, "COPIED")
+        # wait(index == 24 or index == 23, "COPIED")
         swapWindows()
+        pause("Go to start page of Question", cond=index == 1)
         if(index == finalSectionQ):
             adjustFinalPage()
         if (index == 23 or index == 25):
+            sleep(0.5)
             columnBreak()
         paste()
-        wait(index == 24 or index == 23, "PASTED")
+        # wait(index == 24 or index == 23, "PASTED")
         if(index == 21 or index == 23):
             for i in range(endSectionQuestionSpace):
                 enter()
 
         swapWindows()
         if index < maxNumQ:
-            search(str(index + 1))
+            search(str(index + 1) + ". ")
             moveToStartOfLine()
             highlightAbove()
             highlightRight()
@@ -541,16 +631,32 @@ def getExamArray(startQ, count):
                 q += 1
 
 
+def startUp():
+    print("Quitting")
+    closeAllWindows()
+    print("Deleting")
+    base = "/Users/kevin/Documents/Repos/MathVantage/Exams/Basic_Concepts/Pages/"
+    deleteFile(base + "Basic_Concepts - Exam 2 - 011 Questions.pages")
+    deleteFile(base + "Basic_Concepts - Exam 2 - 011 Solution.pages")
+    deleteFile(base + "Source.pages")
+    print("Done")
+    sleep(2)
+
+
 if __name__ == '__main__':
     convertPDF = False
-    quitAtEnd = False
+    quitAtEnd = True
     nums = getInputLines()
 
-    startQ = 11
-    qCount = 1
+    startQ = 92
+    qCount = 9
+
+    # print("Going to quit pages then delete files")
 
     countDown()
     startTime = time()
+
+    # startUp()
 
     try:
         for (index, numQ, numBook, numExam) in getExamArray(startQ, qCount):
@@ -560,8 +666,8 @@ if __name__ == '__main__':
             if convertPDF:
                 clearPDF(numBook, numExam, numQ)
             processFiles(nums[numQ - 1], numBook, numExam, convertPDF)
-            openLectureFiles(numBook, numExam, numQ)
-            processLectureFiles(numBook, numExam, nums[numQ - 1], convertPDF, quitAtEnd=quitAtEnd)
+            openQuestionFiles(numBook, numExam, numQ)
+            processQuestionFiles(numBook, numExam, nums[numQ - 1], convertPDF, quitAtEnd=quitAtEnd)
 
     except Exception as error:
         print("Terminate with Error:", error)
