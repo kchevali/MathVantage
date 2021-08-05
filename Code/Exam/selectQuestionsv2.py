@@ -24,9 +24,9 @@ endSectionQuestionSpace = 20
 maxQ = 200
 finalSectionQ = 21
 displaySections = ["Basic Concepts", "Functions", "Trigonometry",
-                   "Limits", "Derivatives", "Integrals", "Plane Geometry"]
+                   "Limits", "Derivatives", "Integrals", "Plane Geometry", "Solid Geometry", "Analytic Geometry"]
 fileSections = ["Basic_Concepts", "Functions", "Trigonometry",
-                "Limits", "Derivatives", "Integrals", "Plane_Geometry"]
+                "Limits", "Derivatives", "Integrals", "Plane_Geometry", "Solid_Geometry", "Analytic_Geometry"]
 lessons = [
     [(1, 3), (4, 6), (7, 9)],
     [(10, 12), (13, 15), (16, 19)],
@@ -34,7 +34,9 @@ lessons = [
     [(27, 29), (30, 31)],
     [(32, 34), (35, 37)],
     [(38, 40), (41, 42)],
-    [(43, 46), (47, 49), (50, 51)]
+    [(43, 46), (47, 49), (50, 51)],
+    [(52, 54), (55, 57), (58, 59)],
+    [(60, 63), (64, 66)]
 ]
 
 totalQ = [
@@ -44,7 +46,9 @@ totalQ = [
     [125, 125],
     [125, 115],
     [125, 125],
-    [125, 125, 125]
+    [125, 125, 125],
+    [125, 125, 125],
+    [125, 125]
 ]
 
 examQ = [
@@ -54,7 +58,9 @@ examQ = [
     [25, 25],
     [25, 23],
     [25, 25],
-    [25, 25, 25]
+    [25, 25, 25],
+    [25, 25, 25],
+    [25, 25]
 ]
 mouse = pynput.mouse.Controller()
 keyboard = pynput.keyboard.Controller()
@@ -132,7 +138,7 @@ def pause(msg=None, cond=True):
 
 def copyFile(src, dest):
     shutil.copy2(src, dest)
-    sleep(1)
+    sleep(2)
 
 
 def openFile(path):
@@ -313,6 +319,9 @@ def highlightUp():
 def moveDown():
     keyPress('down', interval=pulsePause)
 
+def moveUp():
+    keyPress('up', interval=pulsePause)
+
 
 def movePageDown():
     keyPress('ctrl', 'v', interval=pulsePause)
@@ -364,7 +373,7 @@ def setupFirstPage(numBook, numExam, numQ):
 
     titlePos = (370, y)
     lessonPos = (575, y)
-    textPos = (180, y)
+    textPos = (215, y)
     title = "{} - Exam {}".format(sectionName, numExam)
     lessonStart, lessonEnd = lessons[numBook - 1][numExam - 1]
 
@@ -576,6 +585,15 @@ def processQuestionFiles(numBook, numExam, nums, convertPDF, quitAtEnd=True):
     # textPos = (180, 225)
     # click(textPos)
     gotoStartPage()
+    swapWindows()
+    # for i in range(10):
+    sleep(1)
+    click((250, 20))
+    sleep(1)
+    click((212,222), count=2)
+    moveDown() #some reason this moves 2 pages down
+    moveUp() # 1 page back up
+    swapWindows()
     maxNumQ = examQ[numBook - 1][numExam - 1]
     for index in range(1, 1 + maxNumQ):  # [1,25]
         # wait(index == 23, "At 23!")
@@ -648,8 +666,8 @@ if __name__ == '__main__':
     quitAtEnd = True
     nums = getInputLines()
 
-    startQ = 92
-    qCount = 9
+    startQ = 171
+    qCount = 1
 
     # print("Going to quit pages then delete files")
 
