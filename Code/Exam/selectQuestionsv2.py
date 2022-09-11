@@ -392,7 +392,7 @@ def setupFirstPage(numBook, numExam, numQ):
     write("Lesson: {}-{}".format(lessonStart, lessonEnd))
     click(textPos)
     moveRight()
-    pause("Check for cursor")
+    # pause("Check for cursor")
 
     sleep(2)
     save()
@@ -575,7 +575,7 @@ def processFiles(nums, numBook, numExam, convertPDF, quitAtEnd=True):
         convertToPDF(numBook)
     if quitAtEnd:
         quitPages()
-
+    sleep(2)
     print("\n")
 
 # building the second document (q only)
@@ -666,15 +666,11 @@ if __name__ == '__main__':
     quitAtEnd = True
     nums = getInputLines()
 
-    startQ = 171
-    qCount = 1
-
-    # print("Going to quit pages then delete files")
+    startQ = 168
+    qCount = 3
 
     countDown()
     startTime = time()
-
-    # startUp()
 
     try:
         for (index, numQ, numBook, numExam) in getExamArray(startQ, qCount):
