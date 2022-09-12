@@ -654,8 +654,8 @@ def startUp():
     closeAllWindows()
     print("Deleting")
     base = "/Users/kevin/Documents/Repos/MathVantage/Exams/Basic_Concepts/Pages/"
-    deleteFile(base + "Basic_Concepts - Exam 2 - 011 Questions.pages")
-    deleteFile(base + "Basic_Concepts - Exam 2 - 011 Solution.pages")
+    # deleteFile(base + "Basic_Concepts - Exam 2 - 011 Questions.pages")
+    # deleteFile(base + "Basic_Concepts - Exam 2 - 011 Solution.pages")
     deleteFile(base + "Source.pages")
     print("Done")
     sleep(2)
@@ -666,8 +666,8 @@ if __name__ == '__main__':
     quitAtEnd = True
     nums = getInputLines()
 
-    startQ = 168
-    qCount = 3
+    startQ = 153
+    qCount = 16
 
     countDown()
     startTime = time()
