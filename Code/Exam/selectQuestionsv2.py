@@ -23,20 +23,21 @@ debugPause = 4
 endSectionQuestionSpace = 20
 maxQ = 200
 finalSectionQ = 21
-displaySections = ["Basic Concepts", "Functions", "Trigonometry",
-                   "Limits", "Derivatives", "Integrals", "Plane Geometry", "Solid Geometry", "Analytic Geometry"]
-fileSections = ["Basic_Concepts", "Functions", "Trigonometry",
-                "Limits", "Derivatives", "Integrals", "Plane_Geometry", "Solid_Geometry", "Analytic_Geometry"]
+displaySections = ["Algebra I", "Algebra II", "Trigonometry",
+                   "Limits", "Derivatives", "Integrals", "Plane Geometry", "Solid Geometry", "Analytic Geometry", "Arithmetic"]
+fileSections = ["Algebra_I", "Algebra_II", "Trigonometry",
+                "Limits", "Derivatives", "Integrals", "Plane_Geometry", "Solid_Geometry", "Analytic_Geometry", "Arithmetic"]
 lessons = [
     [(1, 3), (4, 6), (7, 9)],
-    [(10, 12), (13, 15), (16, 19)],
-    [(20, 22), (23, 26)],
-    [(27, 29), (30, 31)],
-    [(32, 34), (35, 37)],
-    [(38, 40), (41, 42)],
-    [(43, 46), (47, 49), (50, 51)],
-    [(52, 54), (55, 57), (58, 59)],
-    [(60, 63), (64, 66)]
+    [(1, 3), (4, 6), (7, 10)],
+    [(1, 3), (4, 7)],
+    [(1, 3), (4, 6)],
+    [(1, 3), (4, 6)],
+    [(1, 3), (4, 5)],
+    [(1, 4), (5, 8), (9, 10)],
+    [(1, 3), (4, 6), (7, 8)],
+    [(1, 4), (5, 7)],
+    [(1,5), (6, 8)]
 ]
 
 totalQ = [
@@ -48,6 +49,7 @@ totalQ = [
     [125, 125],
     [125, 125, 125],
     [125, 125, 125],
+    [125, 125],
     [125, 125]
 ]
 
@@ -60,6 +62,7 @@ examQ = [
     [25, 25],
     [25, 25, 25],
     [25, 25, 25],
+    [25, 25],
     [25, 25]
 ]
 mouse = pynput.mouse.Controller()
@@ -666,8 +669,8 @@ if __name__ == '__main__':
     quitAtEnd = True
     nums = getInputLines()
 
-    startQ = 153
-    qCount = 16
+    startQ = 231
+    qCount = 10
 
     countDown()
     startTime = time()
